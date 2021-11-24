@@ -1,6 +1,7 @@
 import express from "express";
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
+import cors from "cors";
 import postsRouter from "./routes/posts.js";
 import authRouter from "./routes/auth.js";
 dotenv.config();
@@ -41,11 +42,13 @@ const main = async () => {
 
         app.mysql = connection;
 
+        app.use(cors());
+
         app.use(express.json());
 
         app.use("/posts", postsRouter);
 
-        app.use("/auth", authRouter)
+        app.use("/auth", authRouter);
 
         app.listen(8080, () => {
             console.log("listening");

@@ -3,14 +3,17 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import joi from "joi";
+
+import getRandomUser from "../utils/getRandomUser.js";
+
 dotenv.config();
 
 const router = Router();
 
 const userInfoSchema = joi.object({
     username: joi.string().max(50),
-    password: joi.string().min(8)
-})
+    password: joi.string().min(8),
+});
 
 router.post("/register", async (req, res) => {
     const {mysql} = req.app;
@@ -25,6 +28,30 @@ router.post("/register", async (req, res) => {
         res.send({
             registered: username,
         });
+    } catch (error) {
+        res.status(500).send({
+            error: error.message,
+        });
+    }
+});
+
+router.post("/register/random", async (req, res) => {
+    const {mysql} = req.app;
+    try {
+        const {username, password} = await getRandomUser();
+
+        const hashed = await bcrypt.hash(password, 10);
+        const query = "INSERT INTO Users (username, password) VALUES (?, ?);";
+
+        await mysql.query(query, [username, hashed]);
+
+        res.send({
+            registered: {
+                username,
+                password
+            },
+        });
+
     } catch (error) {
         res.status(500).send({
             error: error.message,
